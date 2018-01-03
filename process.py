@@ -16,6 +16,8 @@ class Page:
     level = attr.ib()
     barcodes = attr.ib(default=attr.Factory(list))
     data = attr.ib(default=attr.Factory(list))
+    skip = attr.ib(default=False)
+    title = attr.ib(default=None)
 
     def read_metadata(self):
         self.data = [json.loads(barcode.data) for barcode in self.barcodes]
@@ -24,14 +26,23 @@ class Page:
         """Syncronize metadata."""
         raise NotImplementedError
 
+    def bookmark_entry(self):
+        return '{self.level} "{self.title}" '.format(self=self)
+
 
 @attr.s
 class Node:
     children = attr.ib(default=attr.Factory(list))
     data = attr.ib(default=attr.Factory(list))
+    title = attr.ib(default=None)
+    level = attr.ib(default=0)
 
     def sync(self):
         raise NotImplementedError
+
+    def bookmarks(self):
+        return "\n".join([child.bookmark_entry() + str(i + 1)
+                          for i, child in enumerate(self.children)])
 
 
 def sort_numerically(files):
