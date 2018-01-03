@@ -213,6 +213,10 @@ def get_argument_parser():
                         default='output.pdf',
                         help='output PDF filename' + show_default)
 
+    parser.add_argument('-x', dest='xmp', metavar='XMP',
+                        default='meta.xmp',
+                        help='XMP metadata file' + show_default)
+
     parser.add_argument('-v', dest='value_threshold', metavar='PERCENT',
                         type=percent, default='25',
                         help='background value threshold %%'+show_default)
@@ -534,7 +538,7 @@ def _trapped(trapped):
         return '-set-untrapped'
 
 
-def add_metadata(metadata, options, xmp=None):
+def add_metadata(metadata, options):
     _metadata = dict(title="", author="", subject="",
                      keywords="", creator="noteshrink-0.1.1",
                      producer="", creation_date="",
@@ -553,8 +557,8 @@ def add_metadata(metadata, options, xmp=None):
         "-o", options.pdfname
     ]
 
-    if xmp is not None:
-        _arguments.extend(('-set-metadata', xmp))
+    if os.path.isfile(options.xmp):
+        _arguments.extend(('-set-metadata', options.xmp))
 
     _arguments.append(options.pdfname)
     print(_arguments)
