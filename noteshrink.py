@@ -526,6 +526,51 @@ def emit_pdf(outputs, options):
     else:
         sys.stderr.write('warning: PDF command failed\n')
 
+
+def _trapped(trapped):
+    if trapped:
+        return '-set-trapped'
+    else:
+        return '-set-untrapped'
+
+
+def add_metadata(metadata, options, xmp=None):
+    _metadata = dict(title="", author="", subject="",
+                     keywords="", creator="noteshrink-0.1.1",
+                     producer="", creation_date="",
+                     modification_date="", trapped=False)
+    _metadata.update(metadata)
+    _arguments = [
+        "-set-title", _metadata['title'],
+        "-set-author", _metadata['author'],
+        "-set-subject", _metadata['subject'],
+        "-set-keywords", _metadata['keywords'],
+        "-set-creator", _metadata['creator'],
+        "-set-producer", _metadata['producer'],
+        "-set-create", _metadata['creation_date'],
+        "-set-modify", _metadata['modification_date'],
+        _trapped(_metadata["trapped"]),
+        "-o", options.pdfname
+    ]
+
+    if xmp is not None:
+        _arguments.extend(('-set-metadata', xmp))
+
+    _arguments.append(options.pdfname)
+    print(_arguments)
+
+    try:
+        result = subprocess.call(["cpdf"] + _arguments)
+    except OSError:
+        result = -1
+
+    if result == 0:
+        if not options.quiet:
+            print('  Added metadata to', options.pdfname)
+    else:
+        sys.stderr.write('warning: Adding metadata failed\n')
+
+
 ######################################################################
 
 def notescan_main(options):
@@ -576,6 +621,7 @@ def notescan_main(options):
             print('  done\n')
 
     emit_pdf(outputs, options)
+    add_metadata(dict(title="Title", author="Me"), options)
 
 ######################################################################
 
