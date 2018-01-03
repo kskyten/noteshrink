@@ -217,6 +217,10 @@ def get_argument_parser():
                         default='meta.xmp',
                         help='XMP metadata file' + show_default)
 
+    parser.add_argument('--bookmarks', dest='bookmarks', metavar='BOOKMARKS',
+                        default='bookmarks.txt',
+                        help='bookmarks file' + show_default)
+
     parser.add_argument('-v', dest='value_threshold', metavar='PERCENT',
                         type=percent, default='25',
                         help='background value threshold %%'+show_default)
@@ -561,7 +565,6 @@ def add_metadata(metadata, options):
         _arguments.extend(('-set-metadata', options.xmp))
 
     _arguments.append(options.pdfname)
-    print(_arguments)
 
     try:
         result = subprocess.call(["cpdf"] + _arguments)
@@ -573,6 +576,24 @@ def add_metadata(metadata, options):
             print('  Added metadata to', options.pdfname)
     else:
         sys.stderr.write('warning: Adding metadata failed\n')
+
+
+def add_bookmarks(options):
+    if os.path.isfile(options.bookmarks):
+        try:
+            result = subprocess.call(["cpdf",
+                                      "-add-bookmarks", options.bookmarks,
+                                      "-o", options.pdfname,
+                                      options.pdfname])
+        except OSError:
+            result = -1
+
+        if result == 0:
+            if not options.quiet:
+                print('  Added bookmarks to', options.pdfname)
+        else:
+            sys.stderr.write('warning: Adding bookmarks failed\n')
+
 
 
 ######################################################################
@@ -626,6 +647,7 @@ def notescan_main(options):
 
     emit_pdf(outputs, options)
     add_metadata(dict(title="Title", author="Me"), options)
+    add_bookmarks(options)
 
 ######################################################################
 
